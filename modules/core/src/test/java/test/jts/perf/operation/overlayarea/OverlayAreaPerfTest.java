@@ -1,4 +1,4 @@
-package test.jts.perf.operation.intarea;
+package test.jts.perf.operation.overlayarea;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,21 +8,21 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.util.SineStarFactory;
-import org.locationtech.jts.operation.intarea.IntersectionArea;
+import org.locationtech.jts.operation.overlayarea.OverlayArea;
 
 import test.jts.perf.PerformanceTestCase;
 import test.jts.perf.PerformanceTestRunner;
 
-public class IntersectionAreaPerfTest extends PerformanceTestCase
+public class OverlayAreaPerfTest extends PerformanceTestCase
 {
   public static void main(String args[]) {
-    PerformanceTestRunner.run(IntersectionAreaPerfTest.class);
+    PerformanceTestRunner.run(OverlayAreaPerfTest.class);
   }
   boolean verbose = true;
   private Geometry star1;
   private Geometry star2;
   
-  public IntersectionAreaPerfTest(String name) {
+  public OverlayAreaPerfTest(String name) {
     super(name);
     setRunSize(new int[] { 100, 1000, 2000, 10000 });
     setRunIterations(1);
@@ -41,7 +41,7 @@ public class IntersectionAreaPerfTest extends PerformanceTestCase
   public void runIntersectionArea()
   {
     //System.out.println("Test 1 : Iter # " + iter++);
-    double area = IntersectionArea.area(star1, star2);
+    double area = OverlayArea.intersectionArea(star1, star2);
     System.out.println(">>> IntersectionArea = " + area);
   }
   

@@ -1,12 +1,9 @@
-package org.locationtech.jts.operation.intarea;
-
-import java.util.List;
+package org.locationtech.jts.operation.overlayarea;
 
 import org.locationtech.jts.algorithm.LineIntersector;
 import org.locationtech.jts.algorithm.Orientation;
 import org.locationtech.jts.algorithm.RobustLineIntersector;
 import org.locationtech.jts.algorithm.locate.IndexedPointInAreaLocator;
-import org.locationtech.jts.algorithm.locate.SimplePointInAreaLocator;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Envelope;
@@ -17,11 +14,11 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.index.ItemVisitor;
 import org.locationtech.jts.index.strtree.STRtree;
 
-public class IntersectionArea {
+public class OverlayArea {
   
-  public static double area(Geometry geom0, Geometry geom1) {
-    IntersectionArea area = new IntersectionArea(geom0);
-    return area.area(geom1);
+  public static double intersectionArea(Geometry geom0, Geometry geom1) {
+    OverlayArea area = new OverlayArea(geom0);
+    return area.intersectionArea(geom1);
   }
   
   private static LineIntersector li = new RobustLineIntersector();
@@ -30,13 +27,13 @@ public class IntersectionArea {
   private IndexedPointInAreaLocator locator0;
   private STRtree indexSegs;
 
-  public IntersectionArea(Geometry geom) {
+  public OverlayArea(Geometry geom) {
     this.geom0 = geom;
     locator0 = new IndexedPointInAreaLocator(geom);
     indexSegs = buildIndex(geom);
   }
   
-  public double area(Geometry geom) {
+  public double intersectionArea(Geometry geom) {
     // TODO: for now assume poly is CW and has no holes
     
     double area = 0.0;
@@ -44,6 +41,7 @@ public class IntersectionArea {
     area += areaForIntersections(geom);
     
     area += areaForInteriorVertices(geom, geom0.getEnvelopeInternal(), locator0);
+    
     IndexedPointInAreaLocator locator1 = new IndexedPointInAreaLocator(geom);
     area += areaForInteriorVertices(geom0, geom.getEnvelopeInternal(), locator1);
     
@@ -118,12 +116,12 @@ public class IntersectionArea {
     boolean isAenteringB = Orientation.COUNTERCLOCKWISE == Orientation.index(a0, a1, b1);
     
     if ( isAenteringB ) {
-      return EdgeRay.areaTerm(intPt, a0, a1, true)
-        + EdgeRay.areaTerm(intPt, b1, b0, false);
+      return EdgeVector.areaTerm(intPt, a0, a1, true)
+        + EdgeVector.areaTerm(intPt, b1, b0, false);
     }
     else {
-      return EdgeRay.areaTerm(intPt, a1, a0, false)
-       + EdgeRay.areaTerm(intPt, b0, b1, true);
+      return EdgeVector.areaTerm(intPt, a1, a0, false)
+       + EdgeVector.areaTerm(intPt, b0, b1, true);
     }
   }
 
@@ -184,12 +182,12 @@ public class IntersectionArea {
           boolean isAenteringB = Orientation.COUNTERCLOCKWISE == Orientation.index(a0, a1, b1);
           
           if ( isAenteringB ) {
-            area += EdgeRay.areaTerm(intPt, a0, a1, true);
-            area += EdgeRay.areaTerm(intPt, b1, b0, false);
+            area += EdgeVector.areaTerm(intPt, a0, a1, true);
+            area += EdgeVector.areaTerm(intPt, b1, b0, false);
           }
           else {
-            area += EdgeRay.areaTerm(intPt, a1, a0, false);
-            area += EdgeRay.areaTerm(intPt, b0, b1, true);
+            area += EdgeVector.areaTerm(intPt, a1, a0, false);
+            area += EdgeVector.areaTerm(intPt, b0, b1, true);
           }
         }
       }
@@ -208,12 +206,14 @@ public class IntersectionArea {
     
     for (int i = 0; i < seq.size()-1; i++) {
       Coordinate v = seq.getCoordinate(i);
+      // quick bounda check
       if (! env.contains(v)) continue;
+      // is this vertex in interior of intersection result?
       if (Location.INTERIOR == locator.locate(v)) {
         Coordinate vPrev = i == 0 ? seq.getCoordinate(seq.size()-2) : seq.getCoordinate(i-1);
         Coordinate vNext = seq.getCoordinate(i+1);
-        area += EdgeRay.areaTerm(v, vPrev, ! isCW);
-        area += EdgeRay.areaTerm(v, vNext, isCW);
+        area += EdgeVector.areaTerm(v, vPrev, ! isCW)
+            + EdgeVector.areaTerm(v, vNext, isCW);
       }
     }
     return area;

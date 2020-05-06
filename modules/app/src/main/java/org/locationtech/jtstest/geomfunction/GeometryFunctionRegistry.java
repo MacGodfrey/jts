@@ -32,7 +32,7 @@ import org.locationtech.jtstest.function.DistanceFunctions;
 import org.locationtech.jtstest.function.DoubleKeyMap;
 import org.locationtech.jtstest.function.EditFunctions;
 import org.locationtech.jtstest.function.GeometryFunctions;
-import org.locationtech.jtstest.function.IntersectionAreaFunctions;
+import org.locationtech.jtstest.function.OverlayAreaFunctions;
 import org.locationtech.jtstest.function.JTSFunctions;
 import org.locationtech.jtstest.function.LineHandlingFunctions;
 import org.locationtech.jtstest.function.LinearReferencingFunctions;
@@ -77,7 +77,7 @@ public class GeometryFunctionRegistry
     funcRegistry.add(ConstructionFunctions.class);
     funcRegistry.add(ConversionFunctions.class);
     funcRegistry.add(EditFunctions.class);
-    funcRegistry.add(IntersectionAreaFunctions.class);
+    funcRegistry.add(OverlayAreaFunctions.class);
     funcRegistry.add(LinearReferencingFunctions.class);
     funcRegistry.add(LineHandlingFunctions.class);
     funcRegistry.add(NodingFunctions.class);

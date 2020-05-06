@@ -1,4 +1,4 @@
-package test.jts.perf.operation.intarea;
+package test.jts.perf.operation.overlayarea;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,21 +8,21 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.util.SineStarFactory;
-import org.locationtech.jts.operation.intarea.IntersectionArea;
+import org.locationtech.jts.operation.overlayarea.OverlayArea;
 
 import test.jts.perf.PerformanceTestCase;
 import test.jts.perf.PerformanceTestRunner;
 
-public class IntersectionAreaGridPerfTest extends PerformanceTestCase
+public class OverlayAreaGridPerfTest extends PerformanceTestCase
 {
   public static void main(String args[]) {
-    PerformanceTestRunner.run(IntersectionAreaGridPerfTest.class);
+    PerformanceTestRunner.run(OverlayAreaGridPerfTest.class);
   }
   boolean verbose = true;
   private Geometry star1;
   private Geometry grid;
   
-  public IntersectionAreaGridPerfTest(String name) {
+  public OverlayAreaGridPerfTest(String name) {
     super(name);
     setRunSize(new int[] { 100, 1000, 2000, 10000, 20000 });
     setRunIterations(1);
@@ -43,16 +43,16 @@ public class IntersectionAreaGridPerfTest extends PerformanceTestCase
   public void runIntersectionArea()
   {
     double area = 0.0;
-    IntersectionArea intArea = new IntersectionArea(star1);
+    OverlayArea intArea = new OverlayArea(star1);
     //System.out.println("Test 1 : Iter # " + iter++);
     for (int i = 0; i < grid.getNumGeometries(); i++) {
       Geometry cell = grid.getGeometryN(i);
-      area += intArea.area(cell);
+      area += intArea.intersectionArea(cell);
     }
     System.out.println(">>> IntersectionArea = " + area);
   }
   
-  public void runOverlayArea()
+  public void xrunOverlayArea()
   {
     double area = 0.0;
     //System.out.println("Test 1 : Iter # " + iter++);

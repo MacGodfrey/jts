@@ -1,4 +1,4 @@
-package org.locationtech.jts.operation.intarea;
+package org.locationtech.jts.operation.overlayarea;
 
 import org.locationtech.jts.algorithm.Orientation;
 import org.locationtech.jts.geom.CoordinateSequence;
@@ -32,9 +32,9 @@ public class GeometryArea {
       area += EdgeRay.areaTermBoth(seq.getX(i0), seq.getY(i0),
           seq.getX(i1), seq.getY(i1));
           */
-      area += EdgeRay.areaTerm(seq.getX(i0), seq.getY(i0),
+      area += EdgeVector.areaTerm(seq.getX(i0), seq.getY(i0),
           seq.getX(i1), seq.getY(i1), isCW);
-      area += EdgeRay.areaTerm(seq.getX(i1), seq.getY(i1),
+      area += EdgeVector.areaTerm(seq.getX(i1), seq.getY(i1),
           seq.getX(i0), seq.getY(i0), ! isCW);
     }
     return area;

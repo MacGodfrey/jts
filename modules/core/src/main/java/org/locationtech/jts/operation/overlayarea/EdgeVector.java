@@ -1,8 +1,8 @@
-package org.locationtech.jts.operation.intarea;
+package org.locationtech.jts.operation.overlayarea;
 
 import org.locationtech.jts.geom.Coordinate;
 
-class EdgeRay {
+class EdgeVector {
 
   public static double areaTerm(Coordinate p0, Coordinate p1, boolean isNormalToRight) {
     return areaTerm(p0.x, p0.y, p1.x, p1.y, isNormalToRight);
