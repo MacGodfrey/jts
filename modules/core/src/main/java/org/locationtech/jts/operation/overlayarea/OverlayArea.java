@@ -90,11 +90,11 @@ public class OverlayArea {
       Coordinate a0 = seg.p0;
       Coordinate a1 = seg.p1;
       
-      area += segmentIntArea(b0, b1, a0, a1);
+      area += areaForIntersection(b0, b1, a0, a1);
     }
   }
   
-  private double segmentIntArea(Coordinate b0, Coordinate b1, Coordinate a0, Coordinate a1) {
+  private double areaForIntersection(Coordinate b0, Coordinate b1, Coordinate a0, Coordinate a1) {
     // can assume segment envelopes interact
     
     // TODO: can the intersection computation be optimized?
@@ -123,76 +123,6 @@ public class OverlayArea {
       return EdgeVector.areaTerm(intPt, a1, a0, false)
        + EdgeVector.areaTerm(intPt, b0, b1, true);
     }
-  }
-
-  
-  private double addIntersectionsOLD(Geometry geomB) {
-    double area = 0.0;
-    CoordinateSequence seqA = getVertices(geom0);
-    CoordinateSequence seqB = getVertices(geomB);
-    
-    boolean isCCWA = Orientation.isCCW(seqA);
-    boolean isCCWB = Orientation.isCCW(seqB);
-    
-    Envelope envB = geomB.getEnvelopeInternal();
-    // Compute rays for all intersections
-    LineIntersector li = new RobustLineIntersector();
-    
-    for (int i = 0; i < seqA.size() - 1; i++) {
-      Coordinate a0 = seqA.getCoordinate(i);
-      Coordinate a1 = seqA.getCoordinate(i+1);
-      
-      if (! envB.intersects(a0, a1)) continue;
-      
-      if (isCCWA) {
-        // flip segment orientation
-        Coordinate temp = a0; a0 = a1; a1 = temp;
-      }
-      
-      Envelope envSeg0 = new Envelope(a0, a1);
-      
-      for (int j = 0; j < seqB.size() - 1; j++) {
-        Coordinate b0 = seqB.getCoordinate(j);
-        Coordinate b1 = seqB.getCoordinate(j+1);
-        
-        if (! envSeg0.intersects(b0, b1)) continue;
-        
-        if (isCCWB) {
-          // flip segment orientation
-          Coordinate temp = b0; b0 = b1; b1 = temp;
-        }
-        
-        li.computeIntersection(a0, a1, b0, b1);
-        if (li.hasIntersection()) {
-          //isIntersected0[i] = true;
-          //isIntersected1[j] = true;
-          
-          /**
-           * With both rings oriented CW (effectively)
-           * There are two situations for segment intersections:
-           * 
-           * 1) A entering B, B exiting A => rays are IP-A1:R, IP-B0:L
-           * 2) A exiting B, B entering A => rays are IP-A0:L, IP-B1:R
-           * (where :L/R indicates result is to the Left or Right).
-           * 
-           * Use full edge to compute direction, for accuracy.
-           */
-          Coordinate intPt = li.getIntersection(0);
-          
-          boolean isAenteringB = Orientation.COUNTERCLOCKWISE == Orientation.index(a0, a1, b1);
-          
-          if ( isAenteringB ) {
-            area += EdgeVector.areaTerm(intPt, a0, a1, true);
-            area += EdgeVector.areaTerm(intPt, b1, b0, false);
-          }
-          else {
-            area += EdgeVector.areaTerm(intPt, a1, a0, false);
-            area += EdgeVector.areaTerm(intPt, b0, b1, true);
-          }
-        }
-      }
-    }
-    return area;
   }
     
   private double areaForInteriorVertices(Geometry geom, Envelope env, IndexedPointInAreaLocator locator) {
