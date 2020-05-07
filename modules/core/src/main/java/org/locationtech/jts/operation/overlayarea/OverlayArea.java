@@ -1,5 +1,7 @@
 package org.locationtech.jts.operation.overlayarea;
 
+import java.util.List;
+
 import org.locationtech.jts.algorithm.LineIntersector;
 import org.locationtech.jts.algorithm.Orientation;
 import org.locationtech.jts.algorithm.RobustLineIntersector;
@@ -12,6 +14,8 @@ import org.locationtech.jts.geom.LineSegment;
 import org.locationtech.jts.geom.Location;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.index.ItemVisitor;
+import org.locationtech.jts.index.kdtree.KdNode;
+import org.locationtech.jts.index.kdtree.KdTree;
 import org.locationtech.jts.index.strtree.STRtree;
 
 public class OverlayArea {
@@ -26,11 +30,13 @@ public class OverlayArea {
   private Geometry geom0;
   private IndexedPointInAreaLocator locator0;
   private STRtree indexSegs;
+  private KdTree vertexIndex;
 
   public OverlayArea(Geometry geom) {
     this.geom0 = geom;
     locator0 = new IndexedPointInAreaLocator(geom);
-    indexSegs = buildIndex(geom);
+    indexSegs = buildSegmentIndex(geom);
+    vertexIndex = buildVertexIndex(geom);
   }
   
   public double intersectionArea(Geometry geom) {
@@ -43,7 +49,8 @@ public class OverlayArea {
     area += areaForInteriorVertices(geom, geom0.getEnvelopeInternal(), locator0);
     
     IndexedPointInAreaLocator locator1 = new IndexedPointInAreaLocator(geom);
-    area += areaForInteriorVertices(geom0, geom.getEnvelopeInternal(), locator1);
+    area += areaForInteriorVerticesIndexed(geom0, vertexIndex, geom.getEnvelopeInternal(), locator1);
+    //area += areaForInteriorVertices(geom0, geom.getEnvelopeInternal(), locator1);
     
     return area;
   }
@@ -87,16 +94,11 @@ public class OverlayArea {
     
     public void visitItem(Object item) {
       LineSegment seg = (LineSegment) item;
-      Coordinate a0 = seg.p0;
-      Coordinate a1 = seg.p1;
-      
-      area += areaForIntersection(b0, b1, a0, a1);
+      area += areaForIntersection(b0, b1, seg.p0, seg.p1);
     }
   }
   
-  private double areaForIntersection(Coordinate b0, Coordinate b1, Coordinate a0, Coordinate a1) {
-    // can assume segment envelopes interact
-    
+  private static double areaForIntersection(Coordinate b0, Coordinate b1, Coordinate a0, Coordinate a1) {
     // TODO: can the intersection computation be optimized?
     li.computeIntersection(a0, a1, b0, b1);
     if (! li.hasIntersection()) return 0.0;
@@ -149,13 +151,42 @@ public class OverlayArea {
     return area;
   }
   
+  private double areaForInteriorVerticesIndexed(Geometry geom, KdTree vertexIndex, Envelope env, IndexedPointInAreaLocator locator) {
+    /**
+     * Compute rays originating at vertices inside the intersection result
+     * (i.e. A vertices inside B, and B vertices inside A)
+     */
+    double area = 0.0;
+    CoordinateSequence seq = getVertices(geom);
+    boolean isCW = ! Orientation.isCCW(seq);
+    
+    List verts = vertexIndex.query(env);
+    for (Object node : verts) {
+      KdNode kdNode = (KdNode) node;
+      int i = (Integer) kdNode.getData();
+      
+      Coordinate v = seq.getCoordinate(i);
+      // quick bounda check
+      //if (! env.contains(v)) continue;
+      // is this vertex in interior of intersection result?
+      if (Location.INTERIOR == locator.locate(v)) {
+        Coordinate vPrev = i == 0 ? seq.getCoordinate(seq.size()-2) : seq.getCoordinate(i-1);
+        Coordinate vNext = seq.getCoordinate(i+1);
+        area += EdgeVector.areaTerm(v, vPrev, ! isCW)
+            + EdgeVector.areaTerm(v, vNext, isCW);
+      }
+    }
+    return area;
+  }
+  
+  
   private CoordinateSequence getVertices(Geometry geom) {
     Polygon poly = (Polygon) geom;
     CoordinateSequence seq = poly.getExteriorRing().getCoordinateSequence();
     return seq;
   }
   
-  private STRtree buildIndex(Geometry geom) {
+  private STRtree buildSegmentIndex(Geometry geom) {
     Coordinate[] coords = geom.getCoordinates();
     
     boolean isCCWA = Orientation.isCCW(coords);
@@ -172,4 +203,15 @@ public class OverlayArea {
     }
     return index;
   }
+
+  private KdTree buildVertexIndex(Geometry geom) {
+    Coordinate[] coords = geom.getCoordinates();
+    KdTree index = new KdTree();
+    for (int i = 0; i < coords.length - 1; i++) {
+      Coordinate p = coords[i];
+      index.insert(p, i);
+    }
+    return index;
+  }
+
 }

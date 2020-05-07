@@ -1,5 +1,6 @@
 package test.jts.perf.operation.overlayarea;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,50 +9,65 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.util.SineStarFactory;
+import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.operation.overlayarea.OverlayArea;
 
 import test.jts.perf.PerformanceTestCase;
 import test.jts.perf.PerformanceTestRunner;
+import test.jts.util.IOUtil;
 
-public class OverlayAreaPerfTest extends PerformanceTestCase
+public class OverlayAreaStarsGridPerfTest extends PerformanceTestCase
 {
   public static void main(String args[]) {
-    PerformanceTestRunner.run(OverlayAreaPerfTest.class);
+    PerformanceTestRunner.run(OverlayAreaStarsGridPerfTest.class);
   }
   boolean verbose = true;
-  private Geometry star1;
-  private Geometry star2;
+  private Geometry geom;
+  private Geometry grid;
   
-  public OverlayAreaPerfTest(String name) {
+  public OverlayAreaStarsGridPerfTest(String name) {
     super(name);
-    setRunSize(new int[] { 100, 1000, 2000, 10000 });
+    setRunSize(new int[] { 100, 1000, 2000, 10000, 20000 });
     setRunIterations(1);
   }
 
-  public void startRun(int size)
+  public void startRun(int size) throws IOException, ParseException
   {
-    System.out.println("\n---  Running with size " + size + "  -----------");
     iter = 0;
-    star1 = createSineStar(size, 0);
-    star2 = createSineStar(size, 10);
+    //geom = createSineStar(size, 0);
+    geom = (Geometry) IOUtil.readWKTFile("D:/proj/jts/testing/intersectionarea/dvg_nw.wkt").toArray()[0];
+    grid = grid(geom, 100000);
+    
+    System.out.printf("\n---  Running with Polygon size %d, grid # = %d -------------\n",
+        geom.getNumPoints(), grid.getNumGeometries());
   }
-  
+ 
   private int iter = 0;
   
   public void runIntersectionArea()
   {
+    double area = 0.0;
+    OverlayArea intArea = new OverlayArea(geom);
     //System.out.println("Test 1 : Iter # " + iter++);
-    double area = OverlayArea.intersectionArea(star1, star2);
+    for (int i = 0; i < grid.getNumGeometries(); i++) {
+      Geometry cell = grid.getGeometryN(i);
+      area += intArea.intersectionArea(cell);
+    }
     System.out.println(">>> IntersectionArea = " + area);
   }
   
   public void runOverlayArea()
   {
-    double area = star1.intersection(star2).getArea();
+    double area = 0.0;
+    //System.out.println("Test 1 : Iter # " + iter++);
+    for (int i = 0; i < grid.getNumGeometries(); i++) {
+      Geometry cell = grid.getGeometryN(i);
+      area += geom.intersection(cell).getArea();
+    }
     System.out.println(">>> Overlay area = " + area);
   }
   
-  Geometry createSineStar(int nPts, double offset)
+  public static Geometry createSineStar(int nPts, double offset)
   {
     SineStarFactory gsf = new SineStarFactory();
     gsf.setCentre(new Coordinate(0, offset));
