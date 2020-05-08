@@ -8,6 +8,8 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
+import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 import org.locationtech.jts.geom.util.SineStarFactory;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.operation.overlayarea.OverlayArea;
@@ -16,18 +18,19 @@ import test.jts.perf.PerformanceTestCase;
 import test.jts.perf.PerformanceTestRunner;
 import test.jts.util.IOUtil;
 
-public class OverlayAreaGridsStarPerfTest extends PerformanceTestCase
+public class OverlayAreaGridsPerfTest extends PerformanceTestCase
 {
   public static void main(String args[]) {
-    PerformanceTestRunner.run(OverlayAreaGridsStarPerfTest.class);
+    PerformanceTestRunner.run(OverlayAreaGridsPerfTest.class);
   }
   boolean verbose = true;
   private Geometry geom;
   private Geometry grid;
   
-  public OverlayAreaGridsStarPerfTest(String name) {
+  public OverlayAreaGridsPerfTest(String name) {
     super(name);
-    setRunSize(new int[] { 100, 1000, 2000, 10_000, 20_000, 40_000, 1000_000 });
+    //setRunSize(new int[] { 100, 1000, 2000, 10_000, 20_000, 40_000, 1000_000 });
+    setRunSize(new int[] { 100, 200, 20_000, 40_000, 400_000, 1000_000 });
     setRunIterations(1);
   }
 
@@ -35,7 +38,7 @@ public class OverlayAreaGridsStarPerfTest extends PerformanceTestCase
   {
     iter = 0;
     geom = createSineStar(10_000, 0);
-    //geom = (Geometry) IOUtil.readWKTFile("D:/proj/jts/testing/intersectionarea/dvg_nw.wkt").toArray()[0];
+    geom = (Geometry) IOUtil.readWKTFile("D:/proj/jts/testing/intersectionarea/dvg_nw.wkt").toArray()[0];
     grid = grid(geom, size);
     
     System.out.printf("\n---  Running with Polygon size %d, grid # = %d -------------\n",
@@ -65,6 +68,26 @@ public class OverlayAreaGridsStarPerfTest extends PerformanceTestCase
       area += geom.intersection(cell).getArea();
     }
     System.out.println(">>> Full Intersection area = " + area);
+  }
+  
+  public void runFullIntersectionPrep()
+  {
+    double area = 0.0;
+    PreparedGeometry geomPrep = PreparedGeometryFactory.prepare(geom);
+    //System.out.println("Test 1 : Iter # " + iter++);
+    for (int i = 0; i < grid.getNumGeometries(); i++) {
+      Geometry cell = grid.getGeometryN(i);
+      area += intAreaFullPrep(geom, geomPrep, cell);
+    }
+    System.out.println(">>> Full Intersection area = " + area);
+  }
+  
+  private static double intAreaFullPrep(Geometry geom, PreparedGeometry geomPrep, Geometry geom1) {
+    if (! geomPrep.intersects(geom1)) return 0.0;
+    if (geomPrep.contains(geom1)) return geom1.getArea();
+
+    double intArea = geom.intersection(geom1).getArea();
+    return intArea;
   }
   
   public static Geometry createSineStar(int nPts, double offset)

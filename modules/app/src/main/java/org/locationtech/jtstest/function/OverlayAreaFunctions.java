@@ -1,10 +1,13 @@
 package org.locationtech.jtstest.function;
 
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
+import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 import org.locationtech.jts.operation.overlayarea.GeometryArea;
 import org.locationtech.jts.operation.overlayarea.OverlayArea;
 
 public class OverlayAreaFunctions {
+
   public static double areaSingle(Geometry g) {
     return GeometryArea.area(g);
   }
@@ -13,19 +16,37 @@ public class OverlayAreaFunctions {
     return OverlayArea.intersectionArea(geom0, geom1);
   }
   
-  static OverlayArea cacheIntArea = null;
-  static Geometry cacheKey = null;
-  
+  private static Geometry overlayAreaKey;
+  private static OverlayArea overlayAreaCache;
+
   public static double intersectionAreaPrep(Geometry geom0, Geometry geom1) {
-    if (geom0 != cacheKey) {
-      cacheKey = geom0;
-      cacheIntArea = new OverlayArea(geom0);
+    if (geom0 != overlayAreaKey) {
+      overlayAreaKey = geom0;
+      overlayAreaCache = new OverlayArea(geom0);
     }
-    return cacheIntArea.intersectionArea(geom1);
+    return overlayAreaCache.intersectionArea(geom1);
   }
   
   public static double intAreaOrig(Geometry geom0, Geometry geom1) {
     double intArea = geom0.intersection(geom1).getArea();
+    return intArea;
+  }
+  
+  static PreparedGeometry geomPrepCache = null;
+  static Geometry geomPrepKey = null;
+  
+  public static double intAreaOrigPrep(Geometry geom0, Geometry geom1) {
+    if (geom0 != geomPrepKey) {
+      geomPrepKey = geom0;
+      geomPrepCache = PreparedGeometryFactory.prepare(geom0);
+    }
+    return intAreaFullPrep(geom0, geomPrepCache, geom1);
+  }
+
+  private static double intAreaFullPrep(Geometry geom, PreparedGeometry geomPrep, Geometry geom1) {
+    if (! geomPrep.intersects(geom1)) return 0.0;
+    if (geomPrep.contains(geom1)) return geom1.getArea();
+    double intArea = geom.intersection(geom1).getArea();
     return intArea;
   }
   
