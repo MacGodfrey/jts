@@ -34,9 +34,8 @@ public class OverlayAreaStarsGridPerfTest extends PerformanceTestCase
   public void startRun(int size) throws IOException, ParseException
   {
     iter = 0;
-    //geom = createSineStar(size, 0);
-    geom = (Geometry) IOUtil.readWKTFile("D:/proj/jts/testing/intersectionarea/dvg_nw.wkt").toArray()[0];
-    grid = grid(geom, 100000);
+    geom = createSineStar(size, 0);
+    grid = grid(geom, 100_00);
     
     System.out.printf("\n---  Running with Polygon size %d, grid # = %d -------------\n",
         geom.getNumPoints(), grid.getNumGeometries());
