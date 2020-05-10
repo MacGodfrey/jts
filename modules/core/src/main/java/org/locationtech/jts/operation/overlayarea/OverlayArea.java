@@ -46,6 +46,22 @@ public class OverlayArea {
     
     area += areaForIntersections(geom);
     
+    /**
+     * If area is still zero then no segments intersect.
+     * This means that either the geometries are disjoint, 
+     * or one is inside the other.
+     * This allows computing area more efficiently
+     */
+    if (area == 0.0) {
+      area = areaForContained(geom, geom0.getEnvelopeInternal(), locator0);
+      if (area != 0.0) return area;
+      IndexedPointInAreaLocator locator1 = new IndexedPointInAreaLocator(geom);
+      area = areaForContained(geom0, geom.getEnvelopeInternal(), locator1);
+    }
+    
+    /**
+     * geometries intersect, so add area for interior vertices
+     */
     area += areaForInteriorVertices(geom, geom0.getEnvelopeInternal(), locator0);
     
     IndexedPointInAreaLocator locator1 = new IndexedPointInAreaLocator(geom);
@@ -53,6 +69,13 @@ public class OverlayArea {
     //area += areaForInteriorVertices(geom0, geom.getEnvelopeInternal(), locator1);
     
     return area;
+  }
+
+  private double areaForContained(Geometry geom, Envelope env, IndexedPointInAreaLocator locator) {
+    Coordinate pt = geom.getCoordinate();
+    if (! env.covers(pt)) return 0.0;
+    if (Location.INTERIOR != locator.locate(pt)) return 0.0;
+    return geom.getArea();
   }
 
   private double areaForIntersections(Geometry geomB) {

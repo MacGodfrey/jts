@@ -29,8 +29,8 @@ public class OverlayAreaGridsPerfTest extends PerformanceTestCase
   
   public OverlayAreaGridsPerfTest(String name) {
     super(name);
-    //setRunSize(new int[] { 100, 1000, 2000, 10_000, 20_000, 40_000, 1000_000 });
-    setRunSize(new int[] { 100, 200, 20_000, 40_000, 400_000, 1000_000 });
+    setRunSize(new int[] { 100, 200, 1000, 2000, 10_000, 20_000, 40_000, 100_000, 200_000, 400_000, 1000_000 });
+    //setRunSize(new int[] { 100, 200, 20_000, 40_000, 400_000, 1000_000 });
     setRunIterations(1);
   }
 
@@ -59,7 +59,7 @@ public class OverlayAreaGridsPerfTest extends PerformanceTestCase
     System.out.println(">>> OverlayArea = " + area);
   }
   
-  public void runFullIntersection()
+  public void xrunFullIntersection()
   {
     double area = 0.0;
     //System.out.println("Test 1 : Iter # " + iter++);
@@ -70,7 +70,7 @@ public class OverlayAreaGridsPerfTest extends PerformanceTestCase
     System.out.println(">>> Full Intersection area = " + area);
   }
   
-  public void runFullIntersectionPrep()
+  public void xrunFullIntersectionPrep()
   {
     double area = 0.0;
     PreparedGeometry geomPrep = PreparedGeometryFactory.prepare(geom);
