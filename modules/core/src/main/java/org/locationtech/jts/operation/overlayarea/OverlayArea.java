@@ -47,16 +47,20 @@ public class OverlayArea {
     area += areaForIntersections(geom);
     
     /**
-     * If area is still zero then no segments intersect.
+     * If area for intersections is zero then no segments intersect.
      * This means that either the geometries are disjoint, 
-     * or one is inside the other.
+     * OR one is inside the other.
      * This allows computing area more efficiently
      */
     if (area == 0.0) {
-      area = areaForContained(geom, geom0.getEnvelopeInternal(), locator0);
+      area = areaForContainedGeom(geom, geom0.getEnvelopeInternal(), locator0);
+      // if area is non zero then geom is contained in geom0
       if (area != 0.0) return area;
+      
       IndexedPointInAreaLocator locator1 = new IndexedPointInAreaLocator(geom);
-      area = areaForContained(geom0, geom.getEnvelopeInternal(), locator1);
+      area = areaForContainedGeom(geom0, geom.getEnvelopeInternal(), locator1);
+      // geom0 is either disjoint or contained - either way we are done
+      return area;
     }
     
     /**
@@ -71,7 +75,7 @@ public class OverlayArea {
     return area;
   }
 
-  private double areaForContained(Geometry geom, Envelope env, IndexedPointInAreaLocator locator) {
+  private double areaForContainedGeom(Geometry geom, Envelope env, IndexedPointInAreaLocator locator) {
     Coordinate pt = geom.getCoordinate();
     if (! env.covers(pt)) return 0.0;
     if (Location.INTERIOR != locator.locate(pt)) return 0.0;
@@ -189,8 +193,6 @@ public class OverlayArea {
       int i = (Integer) kdNode.getData();
       
       Coordinate v = seq.getCoordinate(i);
-      // quick bounda check
-      //if (! env.contains(v)) continue;
       // is this vertex in interior of intersection result?
       if (Location.INTERIOR == locator.locate(v)) {
         Coordinate vPrev = i == 0 ? seq.getCoordinate(seq.size()-2) : seq.getCoordinate(i-1);

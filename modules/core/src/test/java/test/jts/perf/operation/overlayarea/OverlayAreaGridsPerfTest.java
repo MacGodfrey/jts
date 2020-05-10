@@ -70,7 +70,7 @@ public class OverlayAreaGridsPerfTest extends PerformanceTestCase
     System.out.println(">>> Full Intersection area = " + area);
   }
   
-  public void xrunFullIntersectionPrep()
+  public void runFullIntersectionPrep()
   {
     double area = 0.0;
     PreparedGeometry geomPrep = PreparedGeometryFactory.prepare(geom);
