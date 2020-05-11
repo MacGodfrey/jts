@@ -17,6 +17,8 @@ import org.locationtech.jts.algorithm.LineIntersector;
 import org.locationtech.jts.algorithm.Orientation;
 import org.locationtech.jts.algorithm.RobustLineIntersector;
 import org.locationtech.jts.algorithm.locate.IndexedPointInAreaLocator;
+import org.locationtech.jts.algorithm.locate.PointOnGeometryLocator;
+import org.locationtech.jts.algorithm.locate.SimplePointInAreaLocator;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Envelope;
@@ -53,35 +55,47 @@ public class OverlayArea {
   public double intersectionArea(Geometry geom) {
     // TODO: for now assume poly is CW and has no holes
     
-    double area2 = areaForIntersections(geom);
+    double areaInt = areaForIntersections(geom);
     
     /**
      * If area for segment intersections is zero then no segments intersect.
      * This means that either the geometries are disjoint, 
      * OR one is inside the other.
-     * This allows computing area more efficiently
+     * This allows computing the area more efficiently
+     * using a simple inside/outside test
      */
-    if (area2 == 0.0) {
-      double area0 = areaForContainedGeom(geom, geom0.getEnvelopeInternal(), locator0);
-      // if area is non zero then geom is contained in geom0
-      if (area0 != 0.0) return area0;
-      
-      IndexedPointInAreaLocator locator1 = new IndexedPointInAreaLocator(geom);
-      double area1 = areaForContainedGeom(geom0, geom.getEnvelopeInternal(), locator1);
-      // geom0 is either disjoint or contained - either way we are done
-      return area1;
+    if (areaInt == 0.0) {
+      return areaContainedOrDisjoint(geom);
     }
     
     /**
-     * geometries intersect, so add area for interior vertices
+     * geometries intersect, so add areas for interior vertices
      */
-    area2 += areaForInteriorVertices(geom, geom0.getEnvelopeInternal(), locator0);
+    double areaVert1 = areaForInteriorVertices(geom, geom0.getEnvelopeInternal(), locator0);
     
     IndexedPointInAreaLocator locator1 = new IndexedPointInAreaLocator(geom);
-    area2 += areaForInteriorVerticesIndexed(geom0, vertexIndex, geom.getEnvelopeInternal(), locator1);
-    //area += areaForInteriorVertices(geom0, geom.getEnvelopeInternal(), locator1);
+    double areaVert0 = areaForInteriorVerticesIndexed(geom0, vertexIndex, geom.getEnvelopeInternal(), locator1);
     
-    return area2 / 2;
+    return (areaInt + areaVert1 + areaVert0) / 2;
+  }
+
+  /**
+   * Computes the area for the situation where the geometries are known to either 
+   * be disjoint, or have one contained in the other.
+   * 
+   * @param geom the other geometry to intersect
+   * @return the area of the contained geometry, or 0.0 if disjoint
+   */
+  private double areaContainedOrDisjoint(Geometry geom) {
+    double area0 = areaForContainedGeom(geom, geom0.getEnvelopeInternal(), locator0);
+    // if area is non zero then geom is contained in geom0
+    if (area0 != 0.0) return area0;
+    
+    // only checking one point, so non-indexed is faster
+    SimplePointInAreaLocator locator = new SimplePointInAreaLocator(geom);
+    double area1 = areaForContainedGeom(geom0, geom.getEnvelopeInternal(), locator);
+    // geom0 is either disjoint or contained - either way we are done
+    return area1;
   }
 
   /**
@@ -93,7 +107,7 @@ public class OverlayArea {
    * @param locator
    * @return the area of the contained geometry, or 0 if it is disjoint
    */
-  private double areaForContainedGeom(Geometry geom, Envelope env, IndexedPointInAreaLocator locator) {
+  private double areaForContainedGeom(Geometry geom, Envelope env, PointOnGeometryLocator locator) {
     Coordinate pt = geom.getCoordinate();
     
     // fast check for disjoint
