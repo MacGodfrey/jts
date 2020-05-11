@@ -54,7 +54,7 @@ public class OverlayArea {
     return intersectionArea2(geom) / 2;
   }
   
-  public double intersectionArea2(Geometry geom) {
+  private double intersectionArea2(Geometry geom) {
     // TODO: for now assume poly is CW and has no holes
     
     double area = 0.0;
