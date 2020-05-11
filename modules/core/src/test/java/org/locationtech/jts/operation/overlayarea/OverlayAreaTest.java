@@ -26,6 +26,18 @@ public class OverlayAreaTest extends GeometryTestCase {
     super(name);
   }
 
+  public void testRectangleAContainsB() {
+    checkIntersectionArea(
+        "POLYGON ((100 300, 300 300, 300 100, 100 100, 100 300))",
+        "POLYGON ((150 250, 250 250, 250 150, 150 150, 150 250))");
+  }
+
+  public void testTriangleAContainsB() {
+    checkIntersectionArea(
+        "POLYGON ((60 170, 270 370, 380 60, 60 170))",
+        "POLYGON ((200 250, 245 155, 291 195, 200 250))");
+  }
+
   public void testRectangleOverlap() {
     checkIntersectionArea(
         "POLYGON ((100 200, 200 200, 200 100, 100 100, 100 200))",

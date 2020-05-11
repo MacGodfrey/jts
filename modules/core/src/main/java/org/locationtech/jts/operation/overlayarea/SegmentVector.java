@@ -14,13 +14,13 @@ package org.locationtech.jts.operation.overlayarea;
 import org.locationtech.jts.geom.Coordinate;
 
 /**
- * Compute the area term due to an edge vector
+ * Compute the area term due to an segment vector
  * arising from an intersection vertex or a contained vertex.
  * 
  * @author Martin Davis
  *
  */
-class EdgeVector {
+class SegmentVector {
 
   public static double area2Term(Coordinate p0, Coordinate p1, boolean isNormalToRight) {
     return area2Term(p0.x, p0.y, p1.x, p1.y, isNormalToRight);

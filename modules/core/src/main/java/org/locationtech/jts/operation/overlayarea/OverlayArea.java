@@ -49,51 +49,58 @@ public class OverlayArea {
     indexSegs = buildSegmentIndex(geom);
     vertexIndex = buildVertexIndex(geom);
   }
- 
-  public double intersectionArea(Geometry geom) {
-    return intersectionArea2(geom) / 2;
-  }
   
-  private double intersectionArea2(Geometry geom) {
+  public double intersectionArea(Geometry geom) {
     // TODO: for now assume poly is CW and has no holes
     
-    double area = 0.0;
-    
-    area += areaForIntersections(geom);
+    double area2 = areaForIntersections(geom);
     
     /**
-     * If area for intersections is zero then no segments intersect.
+     * If area for segment intersections is zero then no segments intersect.
      * This means that either the geometries are disjoint, 
      * OR one is inside the other.
      * This allows computing area more efficiently
      */
-    if (area == 0.0) {
-      area = areaForContainedGeom(geom, geom0.getEnvelopeInternal(), locator0);
+    if (area2 == 0.0) {
+      double area0 = areaForContainedGeom(geom, geom0.getEnvelopeInternal(), locator0);
       // if area is non zero then geom is contained in geom0
-      if (area != 0.0) return area;
+      if (area0 != 0.0) return area0;
       
       IndexedPointInAreaLocator locator1 = new IndexedPointInAreaLocator(geom);
-      area = areaForContainedGeom(geom0, geom.getEnvelopeInternal(), locator1);
+      double area1 = areaForContainedGeom(geom0, geom.getEnvelopeInternal(), locator1);
       // geom0 is either disjoint or contained - either way we are done
-      return area;
+      return area1;
     }
     
     /**
      * geometries intersect, so add area for interior vertices
      */
-    area += areaForInteriorVertices(geom, geom0.getEnvelopeInternal(), locator0);
+    area2 += areaForInteriorVertices(geom, geom0.getEnvelopeInternal(), locator0);
     
     IndexedPointInAreaLocator locator1 = new IndexedPointInAreaLocator(geom);
-    area += areaForInteriorVerticesIndexed(geom0, vertexIndex, geom.getEnvelopeInternal(), locator1);
+    area2 += areaForInteriorVerticesIndexed(geom0, vertexIndex, geom.getEnvelopeInternal(), locator1);
     //area += areaForInteriorVertices(geom0, geom.getEnvelopeInternal(), locator1);
     
-    return area;
+    return area2 / 2;
   }
 
+  /**
+   * Tests and computes the area of a geometry contained in the other,
+   * or 0.0 if the geometry is disjoint.
+   * 
+   * @param geom
+   * @param env
+   * @param locator
+   * @return the area of the contained geometry, or 0 if it is disjoint
+   */
   private double areaForContainedGeom(Geometry geom, Envelope env, IndexedPointInAreaLocator locator) {
     Coordinate pt = geom.getCoordinate();
+    
+    // fast check for disjoint
     if (! env.covers(pt)) return 0.0;
+    // full check for contained
     if (Location.INTERIOR != locator.locate(pt)) return 0.0;
+    
     return geom.getArea();
   }
 
@@ -160,12 +167,12 @@ public class OverlayArea {
     boolean isAenteringB = Orientation.COUNTERCLOCKWISE == Orientation.index(a0, a1, b1);
     
     if ( isAenteringB ) {
-      return EdgeVector.area2Term(intPt, a0, a1, true)
-        + EdgeVector.area2Term(intPt, b1, b0, false);
+      return SegmentVector.area2Term(intPt, a0, a1, true)
+        + SegmentVector.area2Term(intPt, b1, b0, false);
     }
     else {
-      return EdgeVector.area2Term(intPt, a1, a0, false)
-       + EdgeVector.area2Term(intPt, b0, b1, true);
+      return SegmentVector.area2Term(intPt, a1, a0, false)
+       + SegmentVector.area2Term(intPt, b0, b1, true);
     }
   }
     
@@ -186,8 +193,8 @@ public class OverlayArea {
       if (Location.INTERIOR == locator.locate(v)) {
         Coordinate vPrev = i == 0 ? seq.getCoordinate(seq.size()-2) : seq.getCoordinate(i-1);
         Coordinate vNext = seq.getCoordinate(i+1);
-        area += EdgeVector.area2Term(v, vPrev, ! isCW)
-            + EdgeVector.area2Term(v, vNext, isCW);
+        area += SegmentVector.area2Term(v, vPrev, ! isCW)
+            + SegmentVector.area2Term(v, vNext, isCW);
       }
     }
     return area;
@@ -212,8 +219,8 @@ public class OverlayArea {
       if (Location.INTERIOR == locator.locate(v)) {
         Coordinate vPrev = i == 0 ? seq.getCoordinate(seq.size()-2) : seq.getCoordinate(i-1);
         Coordinate vNext = seq.getCoordinate(i+1);
-        area += EdgeVector.area2Term(v, vPrev, ! isCW)
-            + EdgeVector.area2Term(v, vNext, isCW);
+        area += SegmentVector.area2Term(v, vPrev, ! isCW)
+            + SegmentVector.area2Term(v, vNext, isCW);
       }
     }
     return area;

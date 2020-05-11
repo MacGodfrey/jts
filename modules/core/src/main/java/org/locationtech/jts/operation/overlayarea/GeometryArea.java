@@ -43,9 +43,9 @@ public class GeometryArea {
       area += EdgeRay.areaTermBoth(seq.getX(i0), seq.getY(i0),
           seq.getX(i1), seq.getY(i1));
           */
-      area += EdgeVector.area2Term(seq.getX(i0), seq.getY(i0),
+      area += SegmentVector.area2Term(seq.getX(i0), seq.getY(i0),
           seq.getX(i1), seq.getY(i1), isCW)
-          + EdgeVector.area2Term(seq.getX(i1), seq.getY(i1),
+          + SegmentVector.area2Term(seq.getX(i1), seq.getY(i1),
           seq.getX(i0), seq.getY(i0), ! isCW);
     }
     return area / 2;
