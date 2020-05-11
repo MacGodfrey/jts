@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2020 Martin Davis
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Eclipse Distribution License v. 1.0 which accompanies this distribution.
+ * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
+ * and the Eclipse Distribution License is available at
+ *
+ * http://www.eclipse.org/org/documents/edl-v10.php.
+ */
 package org.locationtech.jts.operation.overlayarea;
 
 import java.util.List;
@@ -38,8 +49,12 @@ public class OverlayArea {
     indexSegs = buildSegmentIndex(geom);
     vertexIndex = buildVertexIndex(geom);
   }
-  
+ 
   public double intersectionArea(Geometry geom) {
+    return intersectionArea2(geom) / 2;
+  }
+  
+  public double intersectionArea2(Geometry geom) {
     // TODO: for now assume poly is CW and has no holes
     
     double area = 0.0;
@@ -145,12 +160,12 @@ public class OverlayArea {
     boolean isAenteringB = Orientation.COUNTERCLOCKWISE == Orientation.index(a0, a1, b1);
     
     if ( isAenteringB ) {
-      return EdgeVector.areaTerm(intPt, a0, a1, true)
-        + EdgeVector.areaTerm(intPt, b1, b0, false);
+      return EdgeVector.area2Term(intPt, a0, a1, true)
+        + EdgeVector.area2Term(intPt, b1, b0, false);
     }
     else {
-      return EdgeVector.areaTerm(intPt, a1, a0, false)
-       + EdgeVector.areaTerm(intPt, b0, b1, true);
+      return EdgeVector.area2Term(intPt, a1, a0, false)
+       + EdgeVector.area2Term(intPt, b0, b1, true);
     }
   }
     
@@ -171,8 +186,8 @@ public class OverlayArea {
       if (Location.INTERIOR == locator.locate(v)) {
         Coordinate vPrev = i == 0 ? seq.getCoordinate(seq.size()-2) : seq.getCoordinate(i-1);
         Coordinate vNext = seq.getCoordinate(i+1);
-        area += EdgeVector.areaTerm(v, vPrev, ! isCW)
-            + EdgeVector.areaTerm(v, vNext, isCW);
+        area += EdgeVector.area2Term(v, vPrev, ! isCW)
+            + EdgeVector.area2Term(v, vNext, isCW);
       }
     }
     return area;
@@ -197,8 +212,8 @@ public class OverlayArea {
       if (Location.INTERIOR == locator.locate(v)) {
         Coordinate vPrev = i == 0 ? seq.getCoordinate(seq.size()-2) : seq.getCoordinate(i-1);
         Coordinate vNext = seq.getCoordinate(i+1);
-        area += EdgeVector.areaTerm(v, vPrev, ! isCW)
-            + EdgeVector.areaTerm(v, vNext, isCW);
+        area += EdgeVector.area2Term(v, vPrev, ! isCW)
+            + EdgeVector.area2Term(v, vNext, isCW);
       }
     }
     return area;
