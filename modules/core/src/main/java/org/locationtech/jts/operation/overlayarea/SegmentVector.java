@@ -14,8 +14,8 @@ package org.locationtech.jts.operation.overlayarea;
 import org.locationtech.jts.geom.Coordinate;
 
 /**
- * Compute the area term due to an segment vector
- * arising from an intersection vertex or a contained vertex.
+ * Functions to compute the partial area for a segment vector
+ * starting from an intersection vertex or a contained vertex.
  * 
  * @author Martin Davis
  *
