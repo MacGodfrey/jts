@@ -14,29 +14,52 @@ package org.locationtech.jts.operation.overlayarea;
 import org.locationtech.jts.geom.Coordinate;
 
 /**
- * Functions to compute the partial area for an edge vector
- * starting from an intersection vertex or a contained vertex.
+ * Functions to compute the partial area term for an edge vector
+ * starting at an intersection vertex or a contained vertex.
+ * <p>
+ * Uses mathematics derived from the work of William R. Franklin.
  * 
  * @author Martin Davis
  *
  */
 class EdgeVector {
 
-  public static double area2Term(Coordinate p0, Coordinate p1, boolean isInsideToRight) {
-    return area2Term(p0.x, p0.y, p1.x, p1.y, isInsideToRight);
+  public static double area2Term(Coordinate p0, Coordinate p1, boolean isInteriorToRight) {
+    return area2Term(p0.x, p0.y, p1.x, p1.y, isInteriorToRight);
   }
   
-  public static double area2Term(Coordinate v, Coordinate p0, Coordinate p1, boolean isInsideToRight) {
-    return area2Term(v.x, v.y, p0.x, p0.y, p1.x, p1.y, isInsideToRight);
+  public static double area2Term(Coordinate v, Coordinate p0, Coordinate p1, boolean isInteriorToRight) {
+    return area2Term(v.x, v.y, p0.x, p0.y, p1.x, p1.y, isInteriorToRight);
   }
   
   public static double area2Term(
-      double x0, double y0, double x1, double y1, boolean isInsideToRight) {
-    return area2Term(x0, y0, x0, y0, x1, y1, isInsideToRight);
+      double x0, double y0, double x1, double y1, boolean isInteriorToRight) {
+    return area2Term(x0, y0, x0, y0, x1, y1, isInteriorToRight);
   }
 
+  /**
+   * Computes the partial area (doubled) for the edge vector.
+   * The partial area terms can be summed to determine twice the total
+   * area of a geometry or an overlay.
+   * <p>
+   * The edge vector has origin (vx, vy), and direction vector (x0,y0)->(x1,y1).
+   * The area term sign depends on whether the polygon interior lies to the right or left
+   * of the vector. 
+   * <p>
+   * The value returned is twice the actual area term, to reduce arithmetic operations
+   * over many evaluations.
+   * 
+   * @param vx the x ordinate of the edge origin point
+   * @param vy the y ordinate of the edge origin point
+   * @param x0 the x ordinate of the vector origin
+   * @param y0 the y ordinate of the vector origin
+   * @param x1 the x ordinate of the vector terminus
+   * @param y1 the y ordinate of the vector terminus
+   * @param isInteriorToRight whether the polygon interior lies to the right of the vector
+   * @return the area term
+   */
   public static double area2Term(
-      double vx, double vy, double x0, double y0, double x1, double y1, boolean isInsideToRight) {
+      double vx, double vy, double x0, double y0, double x1, double y1, boolean isInteriorToRight) {
 
     double dx = x1 - x0;
     double dy = y1 - y0;
@@ -50,7 +73,7 @@ class EdgeVector {
     
     // normal vector to edge, pointing into polygon
     double nx, ny;
-    if (isInsideToRight) {
+    if (isInteriorToRight) {
       nx = uy;
       ny = -ux;
     }
