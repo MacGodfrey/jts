@@ -14,13 +14,13 @@ package org.locationtech.jts.operation.overlayarea;
 import org.locationtech.jts.geom.Coordinate;
 
 /**
- * Functions to compute the partial area for a segment vector
+ * Functions to compute the partial area for an edge vector
  * starting from an intersection vertex or a contained vertex.
  * 
  * @author Martin Davis
  *
  */
-class SegmentVector {
+class EdgeVector {
 
   public static double area2Term(Coordinate p0, Coordinate p1, boolean isInsideToRight) {
     return area2Term(p0.x, p0.y, p1.x, p1.y, isInsideToRight);

@@ -181,12 +181,12 @@ public class OverlayArea {
     boolean isAenteringB = Orientation.COUNTERCLOCKWISE == Orientation.index(a0, a1, b1);
     
     if ( isAenteringB ) {
-      return SegmentVector.area2Term(intPt, a0, a1, true)
-        + SegmentVector.area2Term(intPt, b1, b0, false);
+      return EdgeVector.area2Term(intPt, a0, a1, true)
+        + EdgeVector.area2Term(intPt, b1, b0, false);
     }
     else {
-      return SegmentVector.area2Term(intPt, a1, a0, false)
-       + SegmentVector.area2Term(intPt, b0, b1, true);
+      return EdgeVector.area2Term(intPt, a1, a0, false)
+       + EdgeVector.area2Term(intPt, b0, b1, true);
     }
   }
     
@@ -207,8 +207,8 @@ public class OverlayArea {
       if (Location.INTERIOR == locator.locate(v)) {
         Coordinate vPrev = i == 0 ? seq.getCoordinate(seq.size()-2) : seq.getCoordinate(i-1);
         Coordinate vNext = seq.getCoordinate(i+1);
-        area += SegmentVector.area2Term(v, vPrev, ! isCW)
-            + SegmentVector.area2Term(v, vNext, isCW);
+        area += EdgeVector.area2Term(v, vPrev, ! isCW)
+            + EdgeVector.area2Term(v, vNext, isCW);
       }
     }
     return area;
@@ -233,8 +233,8 @@ public class OverlayArea {
       if (Location.INTERIOR == locator.locate(v)) {
         Coordinate vPrev = i == 0 ? seq.getCoordinate(seq.size()-2) : seq.getCoordinate(i-1);
         Coordinate vNext = seq.getCoordinate(i+1);
-        area += SegmentVector.area2Term(v, vPrev, ! isCW)
-            + SegmentVector.area2Term(v, vNext, isCW);
+        area += EdgeVector.area2Term(v, vPrev, ! isCW)
+            + EdgeVector.area2Term(v, vNext, isCW);
       }
     }
     return area;
