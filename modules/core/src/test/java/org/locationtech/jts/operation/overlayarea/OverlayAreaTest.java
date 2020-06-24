@@ -56,6 +56,12 @@ public class OverlayAreaTest extends GeometryTestCase {
         "POLYGON ((400 350, 150 250, 350 200, 200 150, 350 100, 180 50, 400 50, 400 350))");
   }
 
+  public void testAOverlapBWithHole() {
+    checkIntersectionArea(
+        "POLYGON ((100 300, 305 299, 150 200, 300 150, 150 100, 300 50, 100 50, 100 300))",
+        "POLYGON ((185 206, 350 206, 350 100, 185 100, 185 206), (230 190, 310 190, 310 120, 230 120, 230 190))");
+  }
+
   private void checkIntersectionArea(String wktA, String wktB) {
     Geometry a = read(wktA);
     Geometry b = read(wktB);
@@ -65,6 +71,6 @@ public class OverlayAreaTest extends GeometryTestCase {
     
     double intAreaFull = a.intersection(b).getArea();
     
-    assertEquals(ovIntArea, intAreaFull, 0.0001);
+    assertEquals(intAreaFull, ovIntArea, 0.0001);
   }
 }

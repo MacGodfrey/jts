@@ -13,6 +13,7 @@ package org.locationtech.jts.operation.overlayarea;
 
 import java.util.List;
 
+import org.locationtech.jts.algorithm.Area;
 import org.locationtech.jts.algorithm.LineIntersector;
 import org.locationtech.jts.algorithm.Orientation;
 import org.locationtech.jts.algorithm.RobustLineIntersector;
@@ -24,6 +25,7 @@ import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineSegment;
+import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Location;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.index.ItemVisitor;
@@ -53,6 +55,19 @@ public class OverlayArea {
   }
   
   public double intersectionArea(Geometry geom) {
+    return intersectionArea((Polygon) geom);
+  }
+  
+  private double intersectionArea(Polygon geom) {
+    double area = 0;
+    area += intersectionArea(geom.getExteriorRing());
+    for (int i = 0; i < geom.getNumInteriorRing(); i++) {
+      area -= intersectionArea(geom.getInteriorRingN(i));
+    }
+    return area;
+  }
+  
+  private double intersectionArea(LinearRing geom) {
     // TODO: for now assume poly is CW and has no holes
     
     double areaInt = areaForIntersections(geom);
@@ -61,7 +76,7 @@ public class OverlayArea {
      * If area for segment intersections is zero then no segments intersect.
      * This means that either the geometries are disjoint, 
      * OR one is inside the other.
-     * This allows computing the area more efficiently
+     * This allows computing the area efficiently
      * using a simple inside/outside test
      */
     if (areaInt == 0.0) {
@@ -69,7 +84,7 @@ public class OverlayArea {
     }
     
     /**
-     * geometries intersect, so add areas for interior vertices
+     * The geometries intersect, so add areas for interior vertices
      */
     double areaVert1 = areaForInteriorVertices(geom, geom0.getEnvelopeInternal(), locator0);
     
@@ -86,7 +101,7 @@ public class OverlayArea {
    * @param geom the other geometry to intersect
    * @return the area of the contained geometry, or 0.0 if disjoint
    */
-  private double areaContainedOrDisjoint(Geometry geom) {
+  private double areaContainedOrDisjoint(LinearRing geom) {
     double area0 = areaForContainedGeom(geom, geom0.getEnvelopeInternal(), locator0);
     // if area is non zero then geom is contained in geom0
     if (area0 != 0.0) return area0;
@@ -115,20 +130,27 @@ public class OverlayArea {
     // full check for contained
     if (Location.INTERIOR != locator.locate(pt)) return 0.0;
     
+    return area(geom);
+  }
+  
+  private static double area(Geometry geom) {
+    if (geom instanceof LinearRing) {
+      return Area.ofRing( ((LinearRing) geom).getCoordinateSequence() );
+    }
     return geom.getArea();
   }
 
-  private double areaForIntersections(Geometry geomB) {
+  private double areaForIntersections(LinearRing geom) {
     double area = 0.0;
-    CoordinateSequence seqB = getVertices(geomB);
+    CoordinateSequence seq = geom.getCoordinateSequence();
     
-    boolean isCCWB = Orientation.isCCW(seqB);
+    boolean isCCW = Orientation.isCCW(seq);
     
     // Compute rays for all intersections   
-    for (int j = 0; j < seqB.size() - 1; j++) {
-      Coordinate b0 = seqB.getCoordinate(j);
-      Coordinate b1 = seqB.getCoordinate(j+1);
-      if (isCCWB) {
+    for (int j = 0; j < seq.size() - 1; j++) {
+      Coordinate b0 = seq.getCoordinate(j);
+      Coordinate b1 = seq.getCoordinate(j+1);
+      if (isCCW) {
         // flip segment orientation
         Coordinate temp = b0; b0 = b1; b1 = temp;
       }
@@ -191,13 +213,13 @@ public class OverlayArea {
     }
   }
     
-  private double areaForInteriorVertices(Geometry geom, Envelope env, IndexedPointInAreaLocator locator) {
+  private double areaForInteriorVertices(LinearRing geom, Envelope env, IndexedPointInAreaLocator locator) {
     /**
      * Compute rays originating at vertices inside the intersection result
      * (i.e. A vertices inside B, and B vertices inside A)
      */
     double area = 0.0;
-    CoordinateSequence seq = getVertices(geom);
+    CoordinateSequence seq = geom.getCoordinateSequence();
     boolean isCW = ! Orientation.isCCW(seq);
     
     for (int i = 0; i < seq.size()-1; i++) {
