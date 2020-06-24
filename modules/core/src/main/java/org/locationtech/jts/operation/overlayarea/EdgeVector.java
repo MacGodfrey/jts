@@ -25,7 +25,7 @@ import org.locationtech.jts.geom.Coordinate;
 class EdgeVector {
 
   public static double area2Term(Coordinate p0, Coordinate p1, boolean isInteriorToRight) {
-    return area2Term(p0.x, p0.y, p1.x, p1.y, isInteriorToRight);
+    return area2Term(p0.x, p0.y, p0.x, p0.y, p1.x, p1.y, isInteriorToRight);
   }
   
   public static double area2Term(Coordinate v, Coordinate p0, Coordinate p1, boolean isInteriorToRight) {
