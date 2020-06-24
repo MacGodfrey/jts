@@ -168,13 +168,14 @@ public class OverlayArea {
     
     /**
      * With both rings oriented CW (effectively)
-     * There are two situations for segment intersections:
+     * There are two situations for segment intersection:
      * 
      * 1) A entering B, B exiting A => rays are IP-A1:R, IP-B0:L
      * 2) A exiting B, B entering A => rays are IP-A0:L, IP-B1:R
-     * (where :L/R indicates result is to the Left or Right).
+     * (where IP is the intersection point, 
+     * and  :L/R indicates result polygon interior is to the Left or Right).
      * 
-     * Use full edge to compute direction, for accuracy.
+     * The full edge is used to compute direction, for accuracy.
      */
     Coordinate intPt = li.getIntersection(0);
     
