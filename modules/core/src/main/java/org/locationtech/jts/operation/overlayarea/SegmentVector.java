@@ -22,21 +22,21 @@ import org.locationtech.jts.geom.Coordinate;
  */
 class SegmentVector {
 
-  public static double area2Term(Coordinate p0, Coordinate p1, boolean isNormalToRight) {
-    return area2Term(p0.x, p0.y, p1.x, p1.y, isNormalToRight);
+  public static double area2Term(Coordinate p0, Coordinate p1, boolean isInsideToRight) {
+    return area2Term(p0.x, p0.y, p1.x, p1.y, isInsideToRight);
   }
   
-  public static double area2Term(Coordinate v, Coordinate p0, Coordinate p1, boolean isNormalToRight) {
-    return area2Term(v.x, v.y, p0.x, p0.y, p1.x, p1.y, isNormalToRight);
+  public static double area2Term(Coordinate v, Coordinate p0, Coordinate p1, boolean isInsideToRight) {
+    return area2Term(v.x, v.y, p0.x, p0.y, p1.x, p1.y, isInsideToRight);
   }
   
   public static double area2Term(
-      double x0, double y0, double x1, double y1, boolean isNormalToRight) {
-    return area2Term(x0, y0, x0, y0, x1, y1, isNormalToRight);
+      double x0, double y0, double x1, double y1, boolean isInsideToRight) {
+    return area2Term(x0, y0, x0, y0, x1, y1, isInsideToRight);
   }
 
   public static double area2Term(
-      double vx, double vy, double x0, double y0, double x1, double y1, boolean isNormalToRight) {
+      double vx, double vy, double x0, double y0, double x1, double y1, boolean isInsideToRight) {
 
     double dx = x1 - x0;
     double dy = y1 - y0;
@@ -48,9 +48,9 @@ class SegmentVector {
     double ux = dx / len;
     double uy = dy / len;
     
-    // normal vector to edge
+    // normal vector to edge, pointing into polygon
     double nx, ny;
-    if (isNormalToRight) {
+    if (isInsideToRight) {
       nx = uy;
       ny = -ux;
     }
