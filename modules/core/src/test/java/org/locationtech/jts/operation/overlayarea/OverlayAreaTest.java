@@ -62,6 +62,18 @@ public class OverlayAreaTest extends GeometryTestCase {
         "POLYGON ((185 206, 350 206, 350 100, 185 100, 185 206), (230 190, 310 190, 310 120, 230 120, 230 190))");
   }
 
+  public void testAOverlapBMulti() {
+    checkIntersectionArea(
+        "POLYGON ((50 250, 250 250, 250 50, 50 50, 50 250))",
+        "MULTIPOLYGON (((100 200, 100 100, 0 100, 0 200, 100 200)), ((200 200, 300 200, 300 100, 200 100, 200 200)))");
+  }
+
+  public void testAOverlapBMultiHole() {
+    checkIntersectionArea(
+        "POLYGON ((60 200, 250 280, 111 135, 320 120, 50 40, 30 120, 60 200))",
+        "MULTIPOLYGON (((55 266, 150 150, 170 290, 55 266)), ((100 0, 70 130, 260 160, 291 45, 100 0), (150 40, 125 98, 220 110, 150 40)))");
+  }
+
   private void checkIntersectionArea(String wktA, String wktB) {
     Geometry a = read(wktA);
     Geometry b = read(wktB);

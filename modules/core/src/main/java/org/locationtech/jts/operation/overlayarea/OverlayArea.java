@@ -24,6 +24,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFilter;
 import org.locationtech.jts.geom.LineSegment;
 import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Location;
@@ -43,22 +44,37 @@ public class OverlayArea {
   private static LineIntersector li = new RobustLineIntersector();
   
   private Geometry geom0;
+  private Envelope geomEnv0;
   private IndexedPointInAreaLocator locator0;
   private STRtree indexSegs;
   private KdTree vertexIndex;
 
   public OverlayArea(Geometry geom) {
     this.geom0 = geom;
+    geomEnv0 = geom.getEnvelopeInternal();
     locator0 = new IndexedPointInAreaLocator(geom);
     indexSegs = buildSegmentIndex(geom);
     vertexIndex = buildVertexIndex(geom);
   }
   
   public double intersectionArea(Geometry geom) {
-    return intersectionArea((Polygon) geom);
+    PolygonAreaFilter filter = new PolygonAreaFilter();
+    geom.apply(filter);
+    return filter.area;
   }
   
-  private double intersectionArea(Polygon geom) {
+  private class PolygonAreaFilter implements GeometryFilter {
+    double area = 0;
+    @Override
+    public void filter(Geometry geom) {
+      if (geom instanceof Polygon) {
+        area += intersectionAreaPolygon((Polygon) geom);
+      }
+    }
+  }
+  
+  private double intersectionAreaPolygon(Polygon geom) {
+    if (! interacts(geom)) return 0;
     double area = 0;
     area += intersectionArea(geom.getExteriorRing());
     for (int i = 0; i < geom.getNumInteriorRing(); i++) {
@@ -67,9 +83,11 @@ public class OverlayArea {
     return area;
   }
   
+  private boolean interacts(Polygon geom) {
+    return geomEnv0.intersects(geom.getEnvelopeInternal());
+  }
+
   private double intersectionArea(LinearRing geom) {
-    // TODO: for now assume poly is CW and has no holes
-    
     double areaInt = areaForIntersections(geom);
     
     /**
