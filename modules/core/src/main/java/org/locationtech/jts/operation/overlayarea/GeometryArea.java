@@ -55,6 +55,7 @@ public class GeometryArea {
       }
     }
   }
+  
   private double areaPolygon(Polygon geom) {
     double area = areaRing(geom.getExteriorRing());
     for (int i = 0; i < geom.getNumInteriorRing(); i++) {
