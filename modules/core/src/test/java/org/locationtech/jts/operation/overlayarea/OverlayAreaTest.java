@@ -83,6 +83,7 @@ public class OverlayAreaTest extends GeometryTestCase {
     
     double intAreaFull = a.intersection(b).getArea();
     
+    //System.out.printf("OverlayArea: %f   Full overlay: %f\n", ovIntArea, intAreaFull);
     assertEquals(intAreaFull, ovIntArea, 0.0001);
   }
 }
