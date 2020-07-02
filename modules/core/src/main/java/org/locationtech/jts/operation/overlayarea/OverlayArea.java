@@ -35,6 +35,32 @@ import org.locationtech.jts.index.kdtree.KdNode;
 import org.locationtech.jts.index.kdtree.KdTree;
 import org.locationtech.jts.index.strtree.STRtree;
 
+/**
+ * Computes the area of the overlay of two polygons without forming
+ * the actual topology of the overlay.
+ * Since the topology is not needed, the computation is
+ * is insensitive to the fine details of the overlay topology,
+ * and hence is fully robust.
+ * It also allows for a simpler implementation with more aggressive
+ * performance optimization.
+ * <p>
+ * The algorithm uses mathematics derived from the work of William R. Franklin.
+ * The area of a polygon can be computed as a sum of the partial areas
+ * computed for each {@link EdgeVector} of the polygon.
+ * This allows the area of the intersection of two polygons to be computed
+ * by summing the partial areas for the edge vectors of the intersection resultant.
+ * To determine the edge vectors all that is required 
+ * is to compute the vertices of the intersection resultant, 
+ * along with the direction (not the length) of the edges they belong to.
+ * The resultant vertices are the vertices where the edges of the inputs intersect, 
+ * along with the vertices of each input which lie in the interior of the other input.
+ * The direction of the edge vectors is the same as the parent edges from which they derive.
+ * Determining the vertices of intersection is simpler and more robust 
+ * than determining the values of the actual edge line segments in the overlay result.
+ * 
+ * @author Martin Davis
+ *
+ */
 public class OverlayArea {
   
   public static double intersectionArea(Geometry geom0, Geometry geom1) {

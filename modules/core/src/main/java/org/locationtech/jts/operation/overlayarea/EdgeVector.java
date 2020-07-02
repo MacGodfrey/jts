@@ -17,7 +17,14 @@ import org.locationtech.jts.geom.Coordinate;
  * Functions to compute the partial area term for an edge vector
  * starting at an intersection vertex or a contained vertex.
  * <p>
- * The computation uses mathematics derived from the work of William R. Franklin.
+ * An edge vector implicitly defined two derived vectors:
+ * <ul>
+ * <li>A <b>unit tangent vector</b> originating at the start point and parallel to the edge vector</li>
+ * <li>A <b>unit normal vector</b> originating at the start point and perpendicular to the edge, 
+ * pointing into the polygon</li>
+ * </ul>
+ * Note that an edge vector has no notion of its length.
+ * The terminating coordinate is only provided to establish the direction of the vector.
  * 
  * @author Martin Davis
  *
